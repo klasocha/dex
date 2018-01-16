@@ -1,0 +1,88 @@
+---
+title: "Dex"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+load("t_test_pvals_fdr.RData") 
+load("plot_data.RData")
+load("significant_number.RData")
+load("enrichr.RData")
+```
+
+## Wyniki
+
+Zdecydowano się odrzucić wszystkie badania tkanki NAC oraz badanie DEX-STR-2.
+
+
+Za pomocą testu ANOVA zbadano istotność czynników *traktowanie* oraz *tkanka* na poziom ekspresji 112714 izoform. Wyniki, po zastosowaniu poprawki FDR, wskazały, że dla `r significant_treat_number` izoform istotne jest traktowanie, dla `r significant_tissue_number` istotna jest tkanka, a dla `r significant_combination_number` istotna jest ich kombinacja.
+
+
+Dla izoform, dla których czynnik traktowanie okazał się istotny, przeprowadzono test t w celu wykazania różnicy w rozkładach pomiędzy kontrolami a osobnikami traktowanymi. Liczba izoform w których poziom ekspresji istotnie ulega zmianie z podziałem na tkanki jest przedstawiona w poniższej tabelce.
+
+
+
+```{r kable, echo=FALSE}
+AST = c(sum(t_test_pvals_fdr[,1] < 0.05 , na.rm=TRUE)) 
+NEU = c(sum(t_test_pvals_fdr[,2] < 0.05 , na.rm=TRUE))
+STR = c(sum(t_test_pvals_fdr[,3] < 0.05 , na.rm=TRUE))
+dt = data.frame(Isoforms = c(AST, NEU, STR))
+rownames(dt) <- c("AST", "NEU", "STR")
+colnames(dt) <- NULL
+kable_styling(kable(dt, "html"), full_width = FALSE)
+```
+
+
+Wybrano wszystkie izoformy w których poziom ekspresji w STR zmienia się na poziomie istotności 0.05 po zastosowaniu FDR. Poziom ich ekspresji dla każdego badania jest przedstawiony na poniższej heatmapie.
+
+```{r,fig.align='center',out.extra='angle=90', echo=FALSE}
+heatmap(STR_significant_plot[gene_median > 1,], col = colfunc((1000)), scale = "none", dist = function(x) as.dist((1-cor(t(x)))/2), Colv = NA, Rowv = dend)
+```
+
+W bazie EnrichR znalezione zostały następujące informacje na temat klastrów
+
+```{r enrichr, results='asis', echo=FALSE}
+col = 5
+for(i in c(1, 5, 2, 4, 3)){
+  
+  ENCODE_TF_ChIP_seq_2015 = head(enrichr_data[[i]]$`ENCODE_TF_ChIP-seq_2015`$Term)
+  NCI_Nature_2016 = head(enrichr_data[[i]]$`NCI-Nature_2016`$Term)
+  DrugMatrix = head(enrichr_data[[i]]$DrugMatrix$Term)
+  NCI_60_Cancer_Cell_Lines = head(enrichr_data[[i]]$`NCI-60_Cancer_Cell_Lines`$Term)
+  
+  dt = data.frame(ENCODE_TF_ChIP_seq_2015[1:6], NCI_Nature_2016[1:6], DrugMatrix[1:6], NCI_60_Cancer_Cell_Lines[1:6])
+  print(kable_styling(kable(dt, "html"), full_width = FALSE)%>% row_spec(0,color = rainbow(5)[col]))
+  cat('\n')
+  col = col-1
+}
+
+```
+
+Poniżej to samo dla poziomu istotności 0.1.
+
+
+```{r,fig.align='center',out.extra='angle=90', echo=FALSE}
+heatmap(STR_significant_plot01[gene_median01 > 1,], col = colfunc((1000)), scale = "none", dist = function(x) as.dist((1-cor(t(x)))/2), Colv = NA, Rowv = dend01)
+```
+
+```{r enrichr01, results='asis', echo=FALSE}
+col = 5
+for(i in c(4,2,1,3,5)){
+  
+  ENCODE_TF_ChIP_seq_2015 = head(enrichr_data01[[i]]$`ENCODE_TF_ChIP-seq_2015`$Term)
+  NCI_Nature_2016 = head(enrichr_data01[[i]]$`NCI-Nature_2016`$Term)
+  DrugMatrix = head(enrichr_data01[[i]]$DrugMatrix$Term)
+  NCI_60_Cancer_Cell_Lines = head(enrichr_data01[[i]]$`NCI-60_Cancer_Cell_Lines`$Term)
+  
+  dt = data.frame(ENCODE_TF_ChIP_seq_2015[1:6], NCI_Nature_2016[1:6], DrugMatrix[1:6], NCI_60_Cancer_Cell_Lines[1:6])
+  print(kable_styling(kable(dt, "html"), full_width = FALSE) %>% row_spec(0,color = rainbow(5)[col]))
+  cat('\n')
+  col = col-1
+}
+
+```

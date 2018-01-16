@@ -1,0 +1,162 @@
+---
+title: "dex_enrichr"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+library(RISmed)
+
+load("t_test_pvals_fdr.RData") 
+load("plot_data.RData")
+load("significant_number.RData")
+load("enrichr.RData")
+
+
+
+
+
+pubmed_title <- function(pubmed_id){
+  if(length(pubmed_id) != 0){
+    out <- vector()
+    for(i in 1:length(pubmed_id)){
+      out[i] <- ArticleTitle(EUtilsGet(EUtilsSummary(paste0(pubmed_id[i], "[uid]"), db="pubmed")))
+    }
+    return(out)
+    }
+  else{
+    return("")
+  }
+}
+```
+
+Pięć klastrów: [click](#cl2)
+
+Trzy klastry: [click](#cl2)
+
+Dwa klastry: [click](#cl2)
+
+
+\pagebreak
+
+#Pięć Klastrów {#cl5}
+```{r,fig.align='center',out.extra='angle=90', echo=FALSE}
+heatmap(STR_significant_plot01[gene_median01 > 1,], col = colfunc((1000)), scale = "none", dist = function(x) as.dist((1-cor(t(x)))/2), Colv = NA, Rowv = dend01_5cl)
+```
+
+```{r tables_clust5, results='asis', echo=FALSE}
+clust_order = rev(rle(as.numeric(cutree(hc01, 5)[labels(dend01_5cl)]))$values)
+
+for(term in names(enrichr_data_5cl[[1]])){
+  col = 5
+  cat("###", as.character(term), "\n")
+  for(i in clust_order){
+    
+    terms = c(head(enrichr_data_5cl[[i]][[term]]$Term, n = 10))
+    pvals = c(head(enrichr_data_5cl[[i]][[term]]$Adjusted.P.value, n = 10))
+    genes = c(head(enrichr_data_5cl[[i]][[term]]$Genes, n = 10))
+    terms = terms[pvals < 0.05]
+    genes = genes[pvals < 0.05]
+    pvals = pvals[pvals < 0.05]
+    
+    if (term == "GeneSigDB"){
+      terms =  pubmed_title(c(sapply(strsplit(terms, "-"), head, 1)))
+    }
+    
+    if (length(pvals) == 0){
+      terms = c("BRAK")
+      genes = c("BRAK")
+      pvals = c("BRAK")
+    }
+    
+    terms = gsub("\\$", " $ ", terms)
+    
+    dt = data.frame(terms, pvals, genes)
+    print(kable_styling(kable(dt, "html"), full_width = TRUE) %>% row_spec(0,color = rainbow(5)[col]))
+    cat('\n')
+    col = col-1
+  }
+}
+```
+
+\pagebreak
+
+#Trzy Klastry {#cl3}
+```{r,fig.align='center',out.extra='angle=90', echo=FALSE}
+heatmap(STR_significant_plot01[gene_median01 > 1,], col = colfunc((1000)), scale = "none", dist = function(x) as.dist((1-cor(t(x)))/2), Colv = NA, Rowv = dend01_3cl)
+```
+
+```{r tables_clust3, results='asis', echo=FALSE}
+clust_order = rev(rle(as.numeric(cutree(hc01, 3)[labels(dend01_3cl)]))$values)
+
+for(term in names(enrichr_data_3cl[[1]])){
+  col = 3
+  cat("###", as.character(term), "\n")
+  for(i in clust_order){
+    
+    terms = c(head(enrichr_data_5cl[[i]][[term]]$Term, n = 10))
+    pvals = c(head(enrichr_data_5cl[[i]][[term]]$Adjusted.P.value, n = 10))
+    genes = c(head(enrichr_data_5cl[[i]][[term]]$Genes, n = 10))
+    terms = terms[pvals < 0.05]
+    genes = genes[pvals < 0.05]
+    pvals = pvals[pvals < 0.05]
+    
+    if (length(pvals) == 0){
+      terms = c("BRAK")
+      genes = c("BRAK")
+      pvals = c("BRAK")
+    }
+    
+    terms = gsub("\\$", " $ ", terms)
+    
+    dt = data.frame(terms, pvals, genes)
+    print(kable_styling(kable(dt, "html"), full_width = TRUE) %>% row_spec(0,color = rainbow(3)[col]))
+    cat('\n')
+    col = col-1
+  }
+}
+```
+
+\pagebreak
+
+#Dwa Klastry {#cl2}
+```{r,fig.align='center',out.extra='angle=90', echo=FALSE}
+heatmap(STR_significant_plot01[gene_median01 > 1,], col = colfunc((1000)), scale = "none", dist = function(x) as.dist((1-cor(t(x)))/2), Colv = NA, Rowv = dend01_2cl)
+```
+
+
+```{r tables_clust2, results='asis', echo=FALSE}
+
+clust_order = rev(rle(as.numeric(cutree(hc01, 2)[labels(dend01_2cl)]))$values)
+
+for(term in names(enrichr_data_2cl[[1]])){
+  col = 2
+  cat("###", as.character(term), "\n")
+  for(i in clust_order){
+    
+    terms = c(head(enrichr_data_5cl[[i]][[term]]$Term, n = 10))
+    pvals = c(head(enrichr_data_5cl[[i]][[term]]$Adjusted.P.value, n = 10))
+    genes = c(head(enrichr_data_5cl[[i]][[term]]$Genes, n = 10))
+    terms = terms[pvals < 0.05]
+    genes = genes[pvals < 0.05]
+    pvals = pvals[pvals < 0.05]
+    
+    if (length(pvals) == 0){
+      terms = c("BRAK")
+      genes = c("BRAK")
+      pvals = c("BRAK")
+    }
+    
+    terms = gsub("\\$", " $ ", terms)
+    
+    dt = data.frame(terms, pvals, genes)
+    print(kable_styling(kable(dt, "html"), full_width = TRUE) %>% row_spec(0,color = rainbow(2)[col]))
+    cat('\n')
+    col = col-1
+  }
+}
+```
