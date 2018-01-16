@@ -1,8 +1,8 @@
 ---
 title: "dex_enrichr"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -34,9 +34,9 @@ pubmed_title <- function(pubmed_id){
 }
 ```
 
-Pięć klastrów: [click](#cl2)
+Pięć klastrów: [click](#cl5)
 
-Trzy klastry: [click](#cl2)
+Trzy klastry: [click](#cl3)
 
 Dwa klastry: [click](#cl2)
 

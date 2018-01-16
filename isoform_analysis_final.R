@@ -22,9 +22,12 @@ thresh <- function(x, threshold = 2.5) {
 corr_dist = function(x) as.dist((1-cor(t(x)))/2)
 
 
-##Wczytywanie danych z plików. Wszystkie pliki z danymi muszą znajdować się gdzieś wewnątrz dex-project/cufflinks/..., oprócz tego nie może tam być żadnych innych.
-dataFiles <- lapply(Sys.glob("dex-project/cufflinks/*/isoforms.fpkm_tracking")[-c(6,7,8,9,24,25,26,27,33)], read.table) #usuwamy wszystkie NAC i DEX_STR_2
-file_names = Sys.glob("dex-project/cufflinks/*/isoforms.fpkm_tracking")[-c(6,7,8,9,24,25,26,27,33)]
+##Wczytywanie danych z plików. Wszystkie pliki z danymi muszą znajdować się wewnątrz data_dir (data_dir/CTRL-AST-3/isoforms.fpkm_tracking)
+data_dir = "dex-project/cufflinks"
+data_dir_regex = paste0(data_dir, "/*/isoforms.fpkm_tracking")
+file_names = sort(Sys.glob(data_dir_regex))[-c(6,7,8,9,24,25,26,27,33)]
+dataFiles <- lapply(file_names, read.table) #usuwamy wszystkie NAC i DEX_STR_2
+
 
 #wczytujemy podstawowe informacje takie jak liczba izoform, ich id, nazwa genów i tworzymy macierz z wynikami fpkms
 isoforms_number = nrow(dataFiles[[1]])-1
@@ -163,12 +166,11 @@ htmap01 = heatmap(STR_significant_plot01[gene_median01 > 1,], col = colfunc((100
 
 save(STR_significant_plot, gene_median, dend, STR_significant_plot01, gene_median01, dend01, colfunc, dend01_5cl, dend01_3cl, dend01_2cl, hc01, file = "dex-project/report/plot_data.RData")
 remove(tissue, i, med, sd, t_test_pvals, dend, dend01, dend01_2cl, dend01_3cl, dend01_5cl, htmap01, 
-       htmap01, STR_significant_plot01, STR_significant_plot, STR_significant, STR_significant01)
+       STR_significant_plot01, STR_significant_plot, STR_significant, STR_significant01)
 
 
 
 #Peak distance analysis
-
 significant_isoforms = isoforms$id[significant_treat[(t_test_pvals_fdr[,3] < 0.1) && (gene_median01 > 1) %in% TRUE]]
 save(significant_isoforms, file = "dex-project/peak-distance/01significant-isoforms.RData")
 
